@@ -1,6 +1,5 @@
-// services/firebaseDriver.js
-import { initializeApp, getApps } from "firebase/app";
-import { getDatabase } from "firebase/database";
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, set } from "firebase/database";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -15,10 +14,22 @@ const firebaseConfig = {
     "https://driver-cfd31-default-rtdb.asia-southeast1.firebasedatabase.app/",
 };
 
-// Initialize Firebase only if it hasn't been initialized yet
-if (!getApps().length) {
-  initializeApp(firebaseConfig);
-}
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
-// Export the initialized database instance
-export const database = getDatabase();
+// Function to update driver's acceptance status
+export const updateDriverStatus = (bookingId, driverId, isAccepted) => {
+  const statusRef = ref(database, `bookings/${bookingId}/drivers/${driverId}`);
+
+  set(statusRef, {
+    accepted: isAccepted,
+    timestamp: Date.now(), // Optional: to record when the status was updated
+  })
+    .then(() => {
+      console.log("Driver's acceptance status updated successfully.");
+    })
+    .catch((error) => {
+      console.error("Error updating acceptance status:", error);
+    });
+};
